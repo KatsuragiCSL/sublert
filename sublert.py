@@ -3,6 +3,8 @@
 # Announced and released during OWASP Seasides 2019 & NullCon.
 # Huge shout out to the Indian bug bounty community for their hospitality.
 
+from Sublist3r import sublist3r
+import socket
 import argparse
 import dns.resolver
 import sys
@@ -179,6 +181,15 @@ class cert_database(object): #Connecting to crt.sh public API to retrieve subdom
                 domain = "%25.{}".format(domain)
                 url = base_url.format(domain)
             subdomains = set()
+            
+            subs = sublist3r.main(domain, 20, None, None, silent=False, verbose=True, enable_bruteforce=False, engines=None)
+            for x in subs:
+                try:
+                    socket.gethostbyname(x)
+                    subdomains.add(x)
+                except:
+                    pass
+            
             user_agent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:64.0) Gecko/20100101 Firefox/64.0'
             req = requests.get(url, headers={'User-Agent': user_agent}, timeout=20, verify=False) #times out after 8 seconds waiting
             if req.status_code == 200:
